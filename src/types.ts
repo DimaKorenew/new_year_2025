@@ -13,6 +13,9 @@ export interface Recipe {
   image: string;
   saladFilter?: SaladFilter;
   drinkCategory?: DrinkCategory;
+  description?: string;
+  rating?: number;
+  ingredients?: string[];
 }
 
 export interface Article {

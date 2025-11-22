@@ -408,6 +408,7 @@ export const VideoRecipesSection: React.FC<VideoRecipesSectionProps> = ({ data }
 
   return (
     <section
+      id="video"
       ref={sectionRef}
       className={`py-16 px-4 bg-gray-50 ${isVisible ? 'fade-in' : 'opacity-0'}`}
     >

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 const navItems = [
-  { id: 'salads', label: '🥗 Салаты', href: '#salads' },
-  { id: 'serving', label: '🎁 Сервировка', href: '#articles' },
-  { id: 'articles', label: '📰 Статьи', href: '#articles' },
+  { id: 'salads', label: '🥗 Рецепты', href: '#salads' },
+  { id: 'articles', label: '📰 Идеи и советы', href: '#articles' },
+  { id: 'video', label: '🎬 Видео', href: '#video' },
   { id: 'timeline', label: '⏰ План', href: '#timeline' },
 ];
 

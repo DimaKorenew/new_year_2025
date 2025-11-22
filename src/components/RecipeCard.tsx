@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Recipe } from '../types';
 
 interface RecipeCardProps {
@@ -7,6 +7,13 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onOpen }) => {
+  const [isIngredientsOpen, setIsIngredientsOpen] = useState(false);
+
+  const handleIngredientsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsIngredientsOpen(!isIngredientsOpen);
+  };
+
   return (
     <article
       className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-2"
@@ -24,10 +31,46 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onOpen }) => {
         <h3 className="text-xl font-bold mb-2">
           {recipe.emoji} {recipe.name}
         </h3>
+        
+        {recipe.description && (
+          <p className="text-sm text-gray-600 mb-2">
+            {recipe.description}
+          </p>
+        )}
+        
+        {recipe.rating && (
+          <div className="flex items-center gap-1 mb-2">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className="text-yellow-400 text-lg">⭐</span>
+            ))}
+          </div>
+        )}
+        
         <p className="text-gray-600 mb-4 flex items-center gap-2">
           <span>⏱️</span>
           <span>{recipe.time}</span>
         </p>
+        
+        {recipe.ingredients && recipe.ingredients.length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={handleIngredientsClick}
+              className="text-sm text-primary hover:text-primary-dark font-medium flex items-center gap-2 mb-2"
+              type="button"
+            >
+              <span>{isIngredientsOpen ? '▼' : '▶'}</span>
+              <span>Ингредиенты</span>
+            </button>
+            {isIngredientsOpen && (
+              <ul className="text-sm text-gray-600 space-y-1 pl-6 list-disc">
+                {recipe.ingredients.map((ingredient, index) => (
+                  <li key={index}>{ingredient}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        
         <button
           className="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg transition-colors duration-300"
           onClick={(e) => {

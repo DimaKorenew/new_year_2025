@@ -1,10 +1,11 @@
 import type { FC } from 'react';
+import { NewYearCountdown } from './NewYearCountdown';
 
 export const Hero: FC = () => {
   return (
     <section
       id="hero"
-      className="relative min-h-[45vh] md:min-h-[55vh] flex items-center justify-center text-center px-4 py-2 overflow-hidden"
+      className="relative min-h-[45vh] md:h-[58vh] flex items-center justify-center text-center px-4 py-2 overflow-hidden"
     >
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -15,8 +16,8 @@ export const Hero: FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto fade-in w-full">
-        <div className="relative flex justify-center items-center mb-4 md:mb-5">
+      <div className="relative z-10 max-w-5xl mx-auto fade-in w-full flex flex-col items-center justify-center md:py-8">
+        <div className="relative flex justify-center items-center my-6 md:my-0 md:mb-6">
           {/* Новогодние украшения вокруг логотипа */}
           <div className="absolute left-2 md:left-4 top-0 text-xl md:text-3xl animate-pulse">❄️</div>
           <div className="absolute right-2 md:right-4 top-0 text-xl md:text-3xl animate-pulse delay-300">⭐</div>
@@ -28,15 +29,15 @@ export const Hero: FC = () => {
             <img 
               src="/edu-doma-logo.png" 
               alt="Еду Дома" 
-              className="w-auto h-32 md:h-52 max-w-[90vw] md:max-w-full drop-shadow-2xl"
+              className="w-auto h-32 md:h-44 max-w-[90vw] md:max-w-full drop-shadow-2xl"
             />
           </div>
         </div>
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 leading-tight px-2">
-          🎅 НОВОГОДНЕЕ ЗАСТОЛЬЕ 2026 🎄
-        </h1>
-        <p className="text-base md:text-lg lg:text-xl text-white/90 px-2">
-          Все рецепты, идеи и советы для идеального Нового года в одном месте
+        <div>
+          <NewYearCountdown />
+        </div>
+        <p className="text-base md:text-lg lg:text-xl text-white/90 px-2 mb-4 md:mt-0">
+          Рецепты, идеи и советы для идеального Нового года в одном месте
         </p>
       </div>
     </section>

@@ -45,7 +45,7 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({ recipes, onRecipeC
     <section
       id="salads"
       ref={ref}
-      className={`py-16 px-4 bg-white ${isVisible ? 'fade-in' : 'opacity-0'}`}
+      className={`pt-4 pb-16 md:pt-4 px-4 bg-white ${isVisible ? 'fade-in' : 'opacity-0'}`}
     >
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
