@@ -5,6 +5,9 @@ import { RecipeCard } from './RecipeCard';
 interface SaladsSectionProps {
   recipes: Recipe[];
   onRecipeClick: (recipe: Recipe) => void;
+  onAddIngredient?: (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>, ingredient: string) => void;
+  onAddAllIngredients?: (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>) => void;
+  onShowToast?: (message: string) => void;
 }
 
 const filters: { value: SaladFilter; label: string }[] = [
@@ -15,7 +18,13 @@ const filters: { value: SaladFilter; label: string }[] = [
   { value: 'hearty', label: 'Сытные' },
 ];
 
-export const SaladsSection: React.FC<SaladsSectionProps> = ({ recipes, onRecipeClick }) => {
+export const SaladsSection: React.FC<SaladsSectionProps> = ({
+  recipes,
+  onRecipeClick,
+  onAddIngredient,
+  onAddAllIngredients,
+  onShowToast,
+}) => {
   const [activeFilter, setActiveFilter] = useState<SaladFilter>('all');
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);
@@ -72,7 +81,14 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({ recipes, onRecipeC
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} onOpen={onRecipeClick} />
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onOpen={onRecipeClick}
+              onAddIngredient={onAddIngredient}
+              onAddAllIngredients={onAddAllIngredients}
+              onShowToast={onShowToast}
+            />
           ))}
         </div>
       </div>

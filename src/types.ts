@@ -4,6 +4,12 @@ export type SaladFilter = 'all' | 'classic' | 'modern' | 'light' | 'hearty';
 
 export type DrinkCategory = 'alcoholic' | 'non-alcoholic' | 'hot';
 
+export interface RecipeStep {
+  stepNumber: number;
+  image: string;
+  description: string;
+}
+
 export interface Recipe {
   id: string;
   name: string;
@@ -16,6 +22,7 @@ export interface Recipe {
   description?: string;
   rating?: number;
   ingredients?: string[];
+  steps?: RecipeStep[];
 }
 
 export interface Article {

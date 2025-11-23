@@ -23,8 +23,19 @@ export const useShoppingList = () => {
 
   // Parse ingredient string to extract name and amount
   const parseIngredient = (ingredient: string): { name: string; amount: string } => {
+    const trimmed = ingredient.trim();
+    
+    // Try format: "Name - Amount" (e.g., "Крабовое мясо - 200г")
+    const dashMatch = trimmed.match(/^(.+?)\s*-\s*(.+)$/);
+    if (dashMatch) {
+      return {
+        name: dashMatch[1].trim(),
+        amount: dashMatch[2].trim(),
+      };
+    }
+    
     // Try to split by common patterns
-    const parts = ingredient.trim().split(/\s+/);
+    const parts = trimmed.split(/\s+/);
     if (parts.length >= 2) {
       // Assume format: "amount name" or "name amount"
       const lastPart = parts[parts.length - 1];
@@ -39,11 +50,11 @@ export const useShoppingList = () => {
       const name = parts.slice(1).join(' ');
       return { name, amount };
     }
-    return { name: ingredient, amount: '' };
+    return { name: trimmed, amount: '' };
   };
 
   // Add single ingredient
-  const addIngredient = useCallback(async (recipe: Recipe, ingredient: string) => {
+  const addIngredient = useCallback(async (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>, ingredient: string) => {
     if (!recipe.ingredients?.includes(ingredient)) {
       return;
     }
@@ -82,7 +93,7 @@ export const useShoppingList = () => {
   }, [list]);
 
   // Add all ingredients from recipe
-  const addAllIngredients = useCallback(async (recipe: Recipe) => {
+  const addAllIngredients = useCallback(async (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>) => {
     if (!recipe.ingredients || recipe.ingredients.length === 0) {
       return;
     }

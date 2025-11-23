@@ -81,12 +81,28 @@ function App() {
     <div className="min-h-screen">
       <Navigation />
       <Hero />
-      <SaladsSection recipes={salads} onRecipeClick={handleRecipeClick} />
+      <SaladsSection
+        recipes={salads}
+        onRecipeClick={handleRecipeClick}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
       <TagsSection />
       <ArticlesSection articles={articles} />
       <TimelineSection stages={timelineStages} />
-      <VideoRecipesSection data={saladsData} />
-      <VideoRecipesSection data={appetizersData} />
+      <VideoRecipesSection
+        data={saladsData}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
+      <VideoRecipesSection
+        data={appetizersData}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
       <Footer />
       
       <FloatingShareButton onClick={handleShareClick} />

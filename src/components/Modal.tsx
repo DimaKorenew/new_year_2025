@@ -123,12 +123,30 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
           )}
 
-          <div className="prose max-w-none">
-            <p className="text-gray-700">
-              Здесь будет подробный рецепт приготовления {recipe.name.toLowerCase()}.
-              В реальном приложении здесь будет полная инструкция с ингредиентами и пошаговыми действиями.
-            </p>
-          </div>
+          {recipe.steps && recipe.steps.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-xl font-bold mb-4">Шаги приготовления:</h3>
+              <div className="space-y-6">
+                {recipe.steps.map((step) => (
+                  <div key={step.stepNumber} className="border-b border-gray-200 pb-6 last:border-b-0">
+                    <div className="flex items-start gap-4 mb-3">
+                      <div className="flex-shrink-0 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
+                        {step.stepNumber}
+                      </div>
+                      <div className="flex-1">
+                        <img
+                          src={step.image}
+                          alt={`Шаг ${step.stepNumber}`}
+                          className="w-full rounded-lg mb-3 object-cover"
+                        />
+                        <p className="text-gray-700 leading-relaxed">{step.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

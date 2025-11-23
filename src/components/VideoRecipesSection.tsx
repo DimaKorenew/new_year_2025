@@ -24,6 +24,9 @@ export interface VideoRecipeData {
 
 interface VideoRecipesSectionProps {
   data: VideoRecipeData;
+  onAddIngredient?: (recipe: { id: string; name: string; ingredients?: string[] }, ingredient: string) => void;
+  onAddAllIngredients?: (recipe: { id: string; name: string; ingredients?: string[] }) => void;
+  onShowToast?: (message: string) => void;
 }
 
 const saladsData: VideoRecipeData = {
@@ -354,7 +357,12 @@ const appetizersData: VideoRecipeData = {
   ],
 };
 
-export const VideoRecipesSection: React.FC<VideoRecipesSectionProps> = ({ data }) => {
+export const VideoRecipesSection: React.FC<VideoRecipesSectionProps> = ({
+  data,
+  onAddIngredient,
+  onAddAllIngredients,
+  onShowToast,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -485,24 +493,75 @@ export const VideoRecipesSection: React.FC<VideoRecipesSectionProps> = ({ data }
               <div className="border-t border-gray-200 pt-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Рецепты с ингредиентами</h3>
                 <div className="space-y-8">
-                  {data.recipes.map((recipe, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-gray-900">{recipe.title}</h4>
-                        <span className="text-red-600 font-mono font-semibold text-sm">
-                          {recipe.timecode}
-                        </span>
+                  {data.recipes.map((recipe, index) => {
+                    const recipeId = `video-${data.title}-${index}`;
+                    const recipeForShopping = {
+                      id: recipeId,
+                      name: recipe.title,
+                      ingredients: recipe.ingredients,
+                    };
+
+                    const handleAddIngredient = (ingredient: string) => {
+                      if (onAddIngredient) {
+                        onAddIngredient(recipeForShopping, ingredient);
+                        // Extract ingredient name for toast
+                        const ingredientName = ingredient.split(/\s*-\s*/)[0].trim() || ingredient.split(/\s+/).slice(1).join(' ') || ingredient;
+                        if (onShowToast) {
+                          onShowToast(`✓ ${ingredientName} добавлено`);
+                        }
+                      }
+                    };
+
+                    const handleAddAll = () => {
+                      if (onAddAllIngredients) {
+                        onAddAllIngredients(recipeForShopping);
+                        if (onShowToast) {
+                          onShowToast(`✓ Все ингредиенты добавлены`);
+                        }
+                      }
+                    };
+
+                    return (
+                      <div key={index} className="bg-gray-50 rounded-lg p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-gray-900">{recipe.title}</h4>
+                          <span className="text-red-600 font-mono font-semibold text-sm">
+                            {recipe.timecode}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-700 mb-2">Ингредиенты:</h5>
+                          <ul className="list-disc list-inside space-y-1 text-gray-600 mb-3">
+                            {recipe.ingredients.map((ingredient, idx) => (
+                              <li key={idx} className="flex items-center justify-between pr-2">
+                                <span className="flex-1">{ingredient}</span>
+                                {onAddIngredient && (
+                                  <button
+                                    onClick={() => handleAddIngredient(ingredient)}
+                                    className="ml-2 bg-primary hover:bg-primary-dark text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors font-bold text-sm flex-shrink-0"
+                                    aria-label={`Добавить ${ingredient}`}
+                                    type="button"
+                                  >
+                                    +
+                                  </button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                          {onAddAllIngredients && (
+                            <button
+                              onClick={handleAddAll}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                              type="button"
+                            >
+                              <span>➕</span>
+                              <span>Добавить все ингредиенты в список</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <h5 className="font-medium text-gray-700 mb-2">Ингредиенты:</h5>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600">
-                          {recipe.ingredients.map((ingredient, idx) => (
-                            <li key={idx}>{ingredient}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
