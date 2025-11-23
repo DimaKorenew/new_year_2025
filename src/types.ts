@@ -40,4 +40,20 @@ export interface TimelineStage {
   tasks: TimelineTask[];
 }
 
+export interface ShoppingItem {
+  id: string;
+  recipeId: string;
+  recipeName: string;
+  ingredientName: string;
+  amount: string;
+  checked: boolean;
+}
+
+export interface ShoppingList {
+  id: string;
+  items: ShoppingItem[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 
