@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { Hero } from './components/Hero';
 import { Navigation } from './components/Navigation';
 import { FloatingShareButton } from './components/FloatingShareButton';
@@ -13,6 +14,8 @@ import { Modal } from './components/Modal';
 import { Toast } from './components/Toast';
 import { ShoppingListFAB } from './components/ShoppingListFAB';
 import { ShoppingListModal } from './components/ShoppingListModal';
+import { ShareListModal } from './components/ShareListModal';
+import { SharedListBanner } from './components/SharedListBanner';
 import { useShoppingList } from './hooks/useShoppingList';
 import { Recipe } from './types';
 import {
@@ -20,35 +23,37 @@ import {
   articles,
   timelineStages,
 } from './mockData';
+import { saveToLocalStorage } from './services/shoppingListApi';
 
-function App() {
+function MainContent() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showShoppingListModal, setShowShoppingListModal] = useState(false);
+  const [showShareListModal, setShowShareListModal] = useState(false);
+  const [showSharedBanner, setShowSharedBanner] = useState(false);
 
   const {
     list,
     itemsCount,
+    shareId,
+    shareUrl,
+    isShared,
     addIngredient,
     addAllIngredients,
     toggleItem,
     removeItem,
     clearList,
-    loadSharedList,
+    createShareLink,
   } = useShoppingList();
 
-  // Handle URL parameter for shared lists
+  // Handle shared list sync notifications
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const listId = urlParams.get('list');
-    if (listId) {
-      loadSharedList(listId);
-      setShowShoppingListModal(true);
-      // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname);
+    if (isShared && shareId) {
+      // Polling is handled in useShoppingList
+      // This effect can be used for showing sync notifications
     }
-  }, [loadSharedList]);
+  }, [isShared, shareId]);
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -74,6 +79,56 @@ function App() {
   const handleShowToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleShareListClick = () => {
+    setShowShareListModal(true);
+  };
+
+  const handleCreateShareLink = async () => {
+    try {
+      await createShareLink();
+      handleShowToast('✓ Ссылка создана!');
+    } catch (error) {
+      handleShowToast('❌ Не удалось создать ссылку');
+    }
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (shareUrl) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        handleShowToast('✓ Ссылка скопирована в буфер обмена');
+      } catch (error) {
+        console.error('Failed to copy:', error);
+      }
+    }
+  };
+
+  const handleShareNative = async () => {
+    if (shareUrl) {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Мой список продуктов на Новый год 🎄',
+            text: 'Мой список продуктов на Новый год 🎄',
+            url: shareUrl,
+          });
+        } catch (error) {
+          // User cancelled
+        }
+      } else {
+        handleCopyShareUrl();
+      }
+    }
+  };
+
+  const handleSaveSharedList = () => {
+    if (list) {
+      saveToLocalStorage(list);
+      handleShowToast('✓ Список сохранен к себе');
+      setShowSharedBanner(false);
+    }
   };
 
 
@@ -128,6 +183,13 @@ function App() {
         />
       )}
 
+      {showSharedBanner && isShared && (
+        <SharedListBanner
+          onSave={handleSaveSharedList}
+          onDismiss={() => setShowSharedBanner(false)}
+        />
+      )}
+
       {showShoppingListModal && (
         <ShoppingListModal
           list={list}
@@ -136,6 +198,20 @@ function App() {
           onRemoveItem={removeItem}
           onClearList={clearList}
           onShowToast={handleShowToast}
+          onShareClick={handleShareListClick}
+        />
+      )}
+
+      {showShareListModal && (
+        <ShareListModal
+          list={list}
+          shareId={shareId}
+          shareUrl={shareUrl}
+          onClose={() => setShowShareListModal(false)}
+          onCopyUrl={handleCopyShareUrl}
+          onShare={handleShareNative}
+          onGenerateShare={handleCreateShareLink}
+          onShowToast={handleShowToast}
         />
       )}
       
@@ -143,6 +219,208 @@ function App() {
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
     </div>
+  );
+}
+
+function SharedListPage() {
+  const { shareId } = useParams<{ shareId: string }>();
+  const navigate = useNavigate();
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
+  const [showShareListModal, setShowShareListModal] = useState(false);
+  const [showSharedBanner, setShowSharedBanner] = useState(true);
+  const [sharedListError, setSharedListError] = useState<string | null>(null);
+
+  const {
+    list,
+    itemsCount,
+    shareUrl,
+    isShared,
+    addIngredient,
+    addAllIngredients,
+    toggleItem,
+    removeItem,
+    clearList,
+    createShareLink,
+    loadSharedListFromUrl,
+  } = useShoppingList(shareId || null);
+
+  // Load shared list on mount
+  useEffect(() => {
+    if (shareId) {
+      loadSharedListFromUrl(shareId)
+        .then(() => {
+          setShowShoppingListModal(true);
+          handleShowToast('🎁 Вы подключились к общему списку');
+        })
+        .catch((error) => {
+          if (error.message === 'EXPIRED') {
+            setSharedListError('⏰ Срок действия ссылки истек (90 дней)');
+          } else {
+            setSharedListError('😔 Список не найден или был удален');
+          }
+        });
+    }
+  }, [shareId]);
+
+  const handleShowToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleSaveSharedList = () => {
+    if (list) {
+      saveToLocalStorage(list);
+      handleShowToast('✓ Список сохранен к себе');
+      setShowSharedBanner(false);
+    }
+  };
+
+  const handleShareListClick = () => {
+    setShowShareListModal(true);
+  };
+
+  const handleCreateShareLink = async () => {
+    try {
+      await createShareLink();
+      handleShowToast('✓ Ссылка создана!');
+    } catch (error) {
+      handleShowToast('❌ Не удалось создать ссылку');
+    }
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (shareUrl) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        handleShowToast('✓ Ссылка скопирована в буфер обмена');
+      } catch (error) {
+        console.error('Failed to copy:', error);
+      }
+    }
+  };
+
+  const handleShareNative = async () => {
+    if (shareUrl) {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Мой список продуктов на Новый год 🎄',
+            text: 'Мой список продуктов на Новый год 🎄',
+            url: shareUrl,
+          });
+        } catch (error) {
+          // User cancelled
+        }
+      } else {
+        handleCopyShareUrl();
+      }
+    }
+  };
+
+  if (sharedListError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-8 text-center max-w-md">
+          <div className="text-6xl mb-4">😔</div>
+          <h2 className="text-2xl font-bold mb-4">Ошибка</h2>
+          <p className="text-gray-600 mb-6">{sharedListError}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Вернуться на главную
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <Navigation />
+      {showSharedBanner && isShared && (
+        <SharedListBanner
+          onSave={handleSaveSharedList}
+          onDismiss={() => setShowSharedBanner(false)}
+        />
+      )}
+      <Hero />
+      <SaladsSection
+        recipes={salads}
+        onRecipeClick={(recipe) => setSelectedRecipe(recipe)}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
+      <TagsSection />
+      <ArticlesSection articles={articles} />
+      <TimelineSection stages={timelineStages} />
+      <VideoRecipesSection
+        data={saladsData}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
+      <VideoRecipesSection
+        data={appetizersData}
+        onAddIngredient={addIngredient}
+        onAddAllIngredients={addAllIngredients}
+        onShowToast={handleShowToast}
+      />
+      <Footer />
+
+      <ShoppingListFAB itemsCount={itemsCount} onClick={() => setShowShoppingListModal(true)} />
+
+      {selectedRecipe && (
+        <Modal
+          recipe={selectedRecipe}
+          onClose={() => setSelectedRecipe(null)}
+          onAddIngredient={addIngredient}
+          onAddAllIngredients={addAllIngredients}
+          onShowToast={handleShowToast}
+        />
+      )}
+
+      {showShoppingListModal && (
+        <ShoppingListModal
+          list={list}
+          onClose={() => setShowShoppingListModal(false)}
+          onToggleItem={toggleItem}
+          onRemoveItem={removeItem}
+          onClearList={clearList}
+          onShowToast={handleShowToast}
+          onShareClick={handleShareListClick}
+        />
+      )}
+
+      {showShareListModal && (
+        <ShareListModal
+          list={list}
+          shareId={shareId || null}
+          shareUrl={shareUrl}
+          onClose={() => setShowShareListModal(false)}
+          onCopyUrl={handleCopyShareUrl}
+          onShare={handleShareNative}
+          onGenerateShare={handleCreateShareLink}
+          onShowToast={handleShowToast}
+        />
+      )}
+
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainContent />} />
+      <Route path="/s/:shareId" element={<SharedListPage />} />
+    </Routes>
   );
 }
 

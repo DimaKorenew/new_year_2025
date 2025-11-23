@@ -9,6 +9,7 @@ interface ShoppingListModalProps {
   onRemoveItem: (itemId: string) => void;
   onClearList: () => void;
   onShowToast?: (message: string) => void;
+  onShareClick?: () => void;
 }
 
 export const ShoppingListModal: React.FC<ShoppingListModalProps> = ({
@@ -17,10 +18,9 @@ export const ShoppingListModal: React.FC<ShoppingListModalProps> = ({
   onToggleItem,
   onRemoveItem,
   onClearList,
-  onShowToast,
+  onShareClick,
 }) => {
   const [expandedRecipes, setExpandedRecipes] = useState<Set<string>>(new Set());
-  const [shareUrl, setShareUrl] = useState<string>('');
 
   useEffect(() => {
     if (list) {
@@ -28,7 +28,6 @@ export const ShoppingListModal: React.FC<ShoppingListModalProps> = ({
       // Expand all recipes by default
       const recipeIds = new Set(list.items.map((item) => item.recipeId));
       setExpandedRecipes(recipeIds);
-      setShareUrl(`${window.location.origin}${window.location.pathname}?list=${list.id}`);
       track('shopping_list_opened', { itemsCount: list.items.length });
     }
     return () => {
@@ -98,30 +97,9 @@ export const ShoppingListModal: React.FC<ShoppingListModalProps> = ({
     });
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Мой список продуктов на Новый год 🎄',
-          text: 'Мой список продуктов на Новый год 🎄',
-          url: shareUrl,
-        });
-        track('list_shared', { itemsCount: list.items.length, recipesCount });
-      } catch (error) {
-        // User cancelled or error occurred
-        console.log('Share cancelled');
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        track('list_shared', { itemsCount: list.items.length, recipesCount });
-        if (onShowToast) {
-          onShowToast('✓ Ссылка скопирована');
-        }
-      } catch (error) {
-        console.error('Failed to copy:', error);
-      }
+  const handleShare = () => {
+    if (onShareClick) {
+      onShareClick();
     }
   };
 

@@ -123,3 +123,165 @@ export const clearLocalStorage = () => {
   }
 };
 
+// Share endpoints
+export interface ShareListResponse {
+  shareId: string;
+  url: string;
+  expiresAt: number;
+}
+
+// Generate short share ID (6-8 characters)
+const generateShareId = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 7; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// POST /api/lists/share - Create shared list (frontend-only, no backend)
+export const createSharedList = async (list: ShoppingList): Promise<ShareListResponse> => {
+  // Generate unique share ID locally
+  const shareId = generateShareId();
+  
+  // Encode list data to base64
+  const listData = {
+    items: list.items,
+    createdAt: list.createdAt,
+    updatedAt: list.updatedAt,
+  };
+  const jsonString = JSON.stringify(listData);
+  const base64Data = btoa(encodeURIComponent(jsonString));
+  
+  // Create URL with encoded data
+  const basePath = window.location.pathname.replace(/\/$/, '') || '';
+  const url = `${window.location.origin}${basePath}/s/${shareId}?data=${base64Data}`;
+  const expiresAt = Date.now() + 90 * 24 * 60 * 60 * 1000; // 90 days
+
+  // Save to localStorage for owner
+  saveSharedListToLocalStorage(shareId, list, true);
+
+  return {
+    shareId,
+    url,
+    expiresAt,
+  };
+};
+
+// GET /api/lists/share/:shareId - Get shared list (frontend-only, from URL or localStorage)
+export const getSharedList = async (shareId: string): Promise<ShoppingList | null> => {
+  // First, try to get data from URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const encodedData = urlParams.get('data');
+  
+  if (encodedData) {
+    try {
+      // Decode from base64
+      const jsonString = decodeURIComponent(atob(encodedData));
+      const listData = JSON.parse(jsonString);
+      
+      return {
+        id: shareId,
+        items: listData.items || [],
+        createdAt: listData.createdAt || Date.now(),
+        updatedAt: listData.updatedAt || Date.now(),
+      };
+    } catch (error) {
+      console.error('Failed to decode list from URL:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback: try to load from localStorage
+  const stored = loadSharedListFromLocalStorage(shareId);
+  if (stored) {
+    return stored;
+  }
+  
+  return null;
+};
+
+// PATCH /api/lists/share/:shareId - Update shared list (frontend-only, localStorage)
+export const updateSharedList = async (
+  shareId: string,
+  items: ShoppingItem[]
+): Promise<ShoppingList> => {
+  // Since we don't have backend, we update localStorage and update URL if needed
+  const existing = loadSharedListFromLocalStorage(shareId);
+  const updatedList: ShoppingList = {
+    id: shareId,
+    items,
+    createdAt: existing?.createdAt || Date.now(),
+    updatedAt: Date.now(),
+  };
+  
+  // Save to localStorage
+  saveSharedListToLocalStorage(shareId, updatedList, isListOwner(shareId));
+  
+  // Update URL if we're on the shared list page
+  if (window.location.pathname.includes(`/s/${shareId}`)) {
+    try {
+      const listData = {
+        items: updatedList.items,
+        createdAt: updatedList.createdAt,
+        updatedAt: updatedList.updatedAt,
+      };
+      const jsonString = JSON.stringify(listData);
+      const base64Data = btoa(encodeURIComponent(jsonString));
+      
+      // Update URL without reload
+      const newUrl = `${window.location.pathname}?data=${base64Data}`;
+      window.history.replaceState({}, '', newUrl);
+    } catch (error) {
+      console.error('Failed to update URL:', error);
+    }
+  }
+  
+  return updatedList;
+};
+
+// LocalStorage helpers for shared lists
+const SHARED_STORAGE_PREFIX = 'shared-list-';
+const SHARED_OWNER_PREFIX = 'list-owner-';
+
+export const saveSharedListToLocalStorage = (
+  shareId: string,
+  list: ShoppingList,
+  isOwner: boolean
+) => {
+  try {
+    localStorage.setItem(`${SHARED_STORAGE_PREFIX}${shareId}`, JSON.stringify(list));
+    if (isOwner) {
+      localStorage.setItem(`${SHARED_OWNER_PREFIX}${shareId}`, 'true');
+    }
+  } catch (error) {
+    console.error('Failed to save shared list to localStorage:', error);
+  }
+};
+
+export const loadSharedListFromLocalStorage = (shareId: string): ShoppingList | null => {
+  try {
+    const stored = localStorage.getItem(`${SHARED_STORAGE_PREFIX}${shareId}`);
+    if (!stored) {
+      return null;
+    }
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error('Failed to load shared list from localStorage:', error);
+    return null;
+  }
+};
+
+export const isListOwner = (shareId: string): boolean => {
+  try {
+    return localStorage.getItem(`${SHARED_OWNER_PREFIX}${shareId}`) === 'true';
+  } catch (error) {
+    return false;
+  }
+};
+
+export const saveSharedListLocally = (shareId: string, list: ShoppingList) => {
+  saveSharedListToLocalStorage(shareId, list, false);
+};
+
