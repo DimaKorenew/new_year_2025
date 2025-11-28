@@ -75,7 +75,7 @@ export const DrinksSection: React.FC<DrinksSectionProps> = ({ recipes, onRecipeC
                   <div className="p-6 bg-gray-50">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {categoryRecipes.map((recipe) => (
-                        <RecipeCard key={recipe.id} recipe={recipe} onOpen={onRecipeClick} />
+                        <RecipeCard key={recipe.id} recipe={recipe} />
                       ))}
                     </div>
                   </div>

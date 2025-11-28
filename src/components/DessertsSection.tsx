@@ -75,7 +75,7 @@ export const DessertsSection: React.FC<DessertsSectionProps> = ({ recipes, onRec
           >
             {recipes.map((recipe) => (
               <div key={recipe.id} className="flex-shrink-0 w-80">
-                <RecipeCard recipe={recipe} onOpen={onRecipeClick} />
+                <RecipeCard recipe={recipe} />
               </div>
             ))}
           </div>

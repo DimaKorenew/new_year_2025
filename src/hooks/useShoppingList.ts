@@ -10,7 +10,6 @@ import {
   getSharedList,
   updateSharedList,
   saveSharedListToLocalStorage,
-  loadSharedListFromLocalStorage,
   isListOwner,
   saveSharedListLocally,
 } from '../services/shoppingListApi';
@@ -67,7 +66,7 @@ export const useShoppingList = (shareId?: string | null) => {
   }, []);
 
   // Debounced sync for shared lists
-  const debouncedSync = useCallback((items: ShoppingItem[]) => {
+  const debouncedSync = useCallback((items: ShoppingItem[], onError?: (error: Error) => void) => {
     if (syncTimeoutRef.current) {
       window.clearTimeout(syncTimeoutRef.current);
     }
@@ -84,6 +83,12 @@ export const useShoppingList = (shareId?: string | null) => {
           pendingUpdateRef.current = null;
         } catch (error) {
           console.error('Failed to sync shared list:', error);
+          // Check if it's a network error
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            if (onError) {
+              onError(new Error('NETWORK_ERROR'));
+            }
+          }
         }
       }
     }, 1000); // 1 second debounce
@@ -400,9 +405,7 @@ export const useShoppingList = (shareId?: string | null) => {
     }
   }, [list]);
 
-  // Polling for shared lists (every 5 seconds) - checks localStorage and URL
-  // Note: Without backend, real-time sync between devices is not possible
-  // This polling only works for same-browser updates
+  // Polling for shared lists (every 5 seconds) - checks backend for updates
   useEffect(() => {
     if (!isShared || !shareIdState) {
       return;
@@ -410,50 +413,26 @@ export const useShoppingList = (shareId?: string | null) => {
 
     const poll = async () => {
       try {
-        // Check URL parameter first (for cross-device sharing)
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedData = urlParams.get('data');
+        // Fetch latest data from backend
+        const serverList = await getSharedList(shareIdState);
         
-        if (encodedData) {
-          try {
-            const jsonString = decodeURIComponent(atob(encodedData));
-            const listData = JSON.parse(jsonString);
-            
-            if (listData.updatedAt > lastSyncTimestamp) {
-              const serverList: ShoppingList = {
-                id: shareIdState,
-                items: listData.items || [],
-                createdAt: listData.createdAt || Date.now(),
-                updatedAt: listData.updatedAt || Date.now(),
-              };
-              
-              const itemsAdded = serverList.items.length - (list?.items.length || 0);
-              setList(serverList);
-              setLastSyncTimestamp(serverList.updatedAt);
-              saveSharedListToLocalStorage(shareIdState, serverList, isOwner);
-              
-              if (itemsAdded > 0) {
-                return { updated: true, itemsAdded };
-              }
-            }
-          } catch (error) {
-            // URL data invalid, fall through to localStorage
-          }
-        }
-        
-        // Check localStorage for updates
-        const stored = loadSharedListFromLocalStorage(shareIdState);
-        if (stored && stored.updatedAt > lastSyncTimestamp) {
-          const itemsAdded = stored.items.length - (list?.items.length || 0);
-          setList(stored);
-          setLastSyncTimestamp(stored.updatedAt);
+        if (serverList && serverList.updatedAt > lastSyncTimestamp) {
+          // Server has newer data
+          const itemsAdded = serverList.items.length - (list?.items.length || 0);
+          const itemsRemoved = (list?.items.length || 0) - serverList.items.length;
           
-          if (itemsAdded > 0) {
-            return { updated: true, itemsAdded };
+          setList(serverList);
+          setLastSyncTimestamp(serverList.updatedAt);
+          saveSharedListToLocalStorage(shareIdState, serverList, isOwner);
+          
+          // Return update info for toast notification
+          if (itemsAdded > 0 || itemsRemoved > 0) {
+            return { updated: true, itemsAdded, itemsRemoved };
           }
         }
       } catch (error) {
-        console.error('Failed to poll shared list:', error);
+        // Network error - continue working with localStorage
+        console.warn('Failed to poll shared list (offline mode):', error);
       }
       return { updated: false };
     };

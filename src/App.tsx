@@ -10,14 +10,12 @@ import { ArticlesSection } from './components/ArticlesSection';
 import { TimelineSection } from './components/TimelineSection';
 import { VideoRecipesSection, saladsData, appetizersData } from './components/VideoRecipesSection';
 import { Footer } from './components/Footer';
-import { Modal } from './components/Modal';
 import { Toast } from './components/Toast';
 import { ShoppingListFAB } from './components/ShoppingListFAB';
 import { ShoppingListModal } from './components/ShoppingListModal';
 import { ShareListModal } from './components/ShareListModal';
 import { SharedListBanner } from './components/SharedListBanner';
 import { useShoppingList } from './hooks/useShoppingList';
-import { Recipe } from './types';
 import {
   salads,
   articles,
@@ -26,7 +24,6 @@ import {
 import { saveToLocalStorage } from './services/shoppingListApi';
 
 function MainContent() {
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showShoppingListModal, setShowShoppingListModal] = useState(false);
@@ -55,13 +52,6 @@ function MainContent() {
     }
   }, [isShared, shareId]);
 
-  const handleRecipeClick = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedRecipe(null);
-  };
 
   const handleShareClick = () => {
     setShowShareModal(true);
@@ -138,7 +128,7 @@ function MainContent() {
       <Hero />
       <SaladsSection
         recipes={salads}
-        onRecipeClick={handleRecipeClick}
+        onRecipeClick={() => {}}
         onAddIngredient={addIngredient}
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}
@@ -173,15 +163,6 @@ function MainContent() {
         />
       )}
       
-      {selectedRecipe && (
-        <Modal
-          recipe={selectedRecipe}
-          onClose={handleCloseModal}
-          onAddIngredient={addIngredient}
-          onAddAllIngredients={addAllIngredients}
-          onShowToast={handleShowToast}
-        />
-      )}
 
       {showSharedBanner && isShared && (
         <SharedListBanner
@@ -225,7 +206,6 @@ function MainContent() {
 function SharedListPage() {
   const { shareId } = useParams<{ shareId: string }>();
   const navigate = useNavigate();
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showShoppingListModal, setShowShoppingListModal] = useState(false);
   const [showShareListModal, setShowShareListModal] = useState(false);
@@ -255,8 +235,14 @@ function SharedListPage() {
           handleShowToast('🎁 Вы подключились к общему списку');
         })
         .catch((error) => {
-          if (error.message === 'EXPIRED') {
-            setSharedListError('⏰ Срок действия ссылки истек (90 дней)');
+          if (error instanceof Error) {
+            if (error.message === 'EXPIRED') {
+              setSharedListError('⏰ Срок действия ссылки истек (90 дней)');
+            } else if (error.message.includes('404') || error.message.includes('not found')) {
+              setSharedListError('😔 Список не найден или был удален');
+            } else {
+              setSharedListError('😔 Не удалось загрузить список');
+            }
           } else {
             setSharedListError('😔 Список не найден или был удален');
           }
@@ -349,7 +335,7 @@ function SharedListPage() {
       <Hero />
       <SaladsSection
         recipes={salads}
-        onRecipeClick={(recipe) => setSelectedRecipe(recipe)}
+        onRecipeClick={() => {}}
         onAddIngredient={addIngredient}
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}
@@ -373,15 +359,6 @@ function SharedListPage() {
 
       <ShoppingListFAB itemsCount={itemsCount} onClick={() => setShowShoppingListModal(true)} />
 
-      {selectedRecipe && (
-        <Modal
-          recipe={selectedRecipe}
-          onClose={() => setSelectedRecipe(null)}
-          onAddIngredient={addIngredient}
-          onAddAllIngredients={addAllIngredients}
-          onShowToast={handleShowToast}
-        />
-      )}
 
       {showShoppingListModal && (
         <ShoppingListModal

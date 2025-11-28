@@ -84,7 +84,6 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              onOpen={onRecipeClick}
               onAddIngredient={onAddIngredient}
               onAddAllIngredients={onAddAllIngredients}
               onShowToast={onShowToast}

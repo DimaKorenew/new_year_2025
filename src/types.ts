@@ -23,6 +23,7 @@ export interface Recipe {
   rating?: number;
   ingredients?: string[];
   steps?: RecipeStep[];
+  url?: string;
 }
 
 export interface Article {

@@ -1,6 +1,6 @@
 import { ShoppingList, ShoppingItem } from '../types';
 
-const API_BASE_URL = (import.meta as { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = (import.meta as { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 // Create a new shopping list
 export const createShoppingList = async (items: ShoppingItem[]): Promise<ShoppingList> => {
@@ -140,105 +140,195 @@ const generateShareId = (): string => {
   return result;
 };
 
-// POST /api/lists/share - Create shared list (frontend-only, no backend)
+// POST /api/lists/share - Create shared list (with backend)
 export const createSharedList = async (list: ShoppingList): Promise<ShareListResponse> => {
-  // Generate unique share ID locally
-  const shareId = generateShareId();
-  
-  // Encode list data to base64
-  const listData = {
-    items: list.items,
-    createdAt: list.createdAt,
-    updatedAt: list.updatedAt,
-  };
-  const jsonString = JSON.stringify(listData);
-  const base64Data = btoa(encodeURIComponent(jsonString));
-  
-  // Create URL with encoded data
-  const basePath = window.location.pathname.replace(/\/$/, '') || '';
-  const url = `${window.location.origin}${basePath}/s/${shareId}?data=${base64Data}`;
-  const expiresAt = Date.now() + 90 * 24 * 60 * 60 * 1000; // 90 days
+  try {
+    const response = await fetch(`${API_BASE_URL}/lists/share`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        items: list.items,
+        recipes: getUniqueRecipes(list.items),
+      }),
+    });
 
-  // Save to localStorage for owner
-  saveSharedListToLocalStorage(shareId, list, true);
-
-  return {
-    shareId,
-    url,
-    expiresAt,
-  };
-};
-
-// GET /api/lists/share/:shareId - Get shared list (frontend-only, from URL or localStorage)
-export const getSharedList = async (shareId: string): Promise<ShoppingList | null> => {
-  // First, try to get data from URL parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const encodedData = urlParams.get('data');
-  
-  if (encodedData) {
-    try {
-      // Decode from base64
-      const jsonString = decodeURIComponent(atob(encodedData));
-      const listData = JSON.parse(jsonString);
-      
-      return {
-        id: shareId,
-        items: listData.items || [],
-        createdAt: listData.createdAt || Date.now(),
-        updatedAt: listData.updatedAt || Date.now(),
-      };
-    } catch (error) {
-      console.error('Failed to decode list from URL:', error);
-      // Fall through to localStorage
+    if (!response.ok) {
+      throw new Error('Failed to create shared list');
     }
+
+    const data = await response.json();
+    
+    // Save to localStorage for owner
+    saveSharedListToLocalStorage(data.shareId, list, true);
+
+    return data;
+  } catch (error) {
+    // Fallback: generate share ID locally and encode in URL (for offline mode)
+    console.warn('Backend not available, using fallback:', error);
+    const shareId = generateShareId();
+    
+    // Encode list data to base64
+    const listData = {
+      items: list.items,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
+    };
+    const jsonString = JSON.stringify(listData);
+    const base64Data = btoa(encodeURIComponent(jsonString));
+    
+    // Create URL with encoded data
+    const basePath = window.location.pathname.replace(/\/$/, '') || '';
+    const url = `${window.location.origin}${basePath}/s/${shareId}?data=${base64Data}`;
+    const expiresAt = Date.now() + 90 * 24 * 60 * 60 * 1000; // 90 days
+
+    // Save to localStorage for owner
+    saveSharedListToLocalStorage(shareId, list, true);
+
+    return {
+      shareId,
+      url,
+      expiresAt,
+    };
   }
-  
-  // Fallback: try to load from localStorage
-  const stored = loadSharedListFromLocalStorage(shareId);
-  if (stored) {
-    return stored;
-  }
-  
-  return null;
 };
 
-// PATCH /api/lists/share/:shareId - Update shared list (frontend-only, localStorage)
+// Helper: Get unique recipes from items
+const getUniqueRecipes = (items: ShoppingItem[]): string[] => {
+  const recipes = new Set(items.map((item) => item.recipeId));
+  return Array.from(recipes);
+};
+
+// GET /api/lists/share/:shareId - Get shared list (with backend)
+export const getSharedList = async (shareId: string): Promise<ShoppingList | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/lists/share/${shareId}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      if (response.status === 410) {
+        throw new Error('EXPIRED');
+      }
+      throw new Error('Failed to get shared list');
+    }
+
+    const data = await response.json();
+    return {
+      id: shareId,
+      items: data.items || [],
+      createdAt: data.metadata?.createdAt || Date.now(),
+      updatedAt: data.metadata?.updatedAt || Date.now(),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === 'EXPIRED') {
+      throw error;
+    }
+    
+    // Fallback: try URL parameter or localStorage
+    console.warn('Backend not available, trying fallback:', error);
+    
+    // Try URL parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
+    
+    if (encodedData) {
+      try {
+        const jsonString = decodeURIComponent(atob(encodedData));
+        const listData = JSON.parse(jsonString);
+        
+        return {
+          id: shareId,
+          items: listData.items || [],
+          createdAt: listData.createdAt || Date.now(),
+          updatedAt: listData.updatedAt || Date.now(),
+        };
+      } catch (decodeError) {
+        console.error('Failed to decode list from URL:', decodeError);
+      }
+    }
+    
+    // Fallback: try to load from localStorage
+    const stored = loadSharedListFromLocalStorage(shareId);
+    if (stored) {
+      return stored;
+    }
+    
+    return null;
+  }
+};
+
+// PATCH /api/lists/share/:shareId - Update shared list (with backend)
 export const updateSharedList = async (
   shareId: string,
   items: ShoppingItem[]
 ): Promise<ShoppingList> => {
-  // Since we don't have backend, we update localStorage and update URL if needed
-  const existing = loadSharedListFromLocalStorage(shareId);
-  const updatedList: ShoppingList = {
-    id: shareId,
-    items,
-    createdAt: existing?.createdAt || Date.now(),
-    updatedAt: Date.now(),
-  };
-  
-  // Save to localStorage
-  saveSharedListToLocalStorage(shareId, updatedList, isListOwner(shareId));
-  
-  // Update URL if we're on the shared list page
-  if (window.location.pathname.includes(`/s/${shareId}`)) {
-    try {
-      const listData = {
-        items: updatedList.items,
-        createdAt: updatedList.createdAt,
-        updatedAt: updatedList.updatedAt,
-      };
-      const jsonString = JSON.stringify(listData);
-      const base64Data = btoa(encodeURIComponent(jsonString));
-      
-      // Update URL without reload
-      const newUrl = `${window.location.pathname}?data=${base64Data}`;
-      window.history.replaceState({}, '', newUrl);
-    } catch (error) {
-      console.error('Failed to update URL:', error);
+  try {
+    const response = await fetch(`${API_BASE_URL}/lists/share/${shareId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('List not found');
+      }
+      throw new Error('Failed to update shared list');
     }
+
+    const data = await response.json();
+    const updatedList: ShoppingList = {
+      id: shareId,
+      items: data.items || items,
+      createdAt: data.metadata?.createdAt || Date.now(),
+      updatedAt: data.metadata?.updatedAt || Date.now(),
+    };
+    
+    // Save to localStorage
+    saveSharedListToLocalStorage(shareId, updatedList, isListOwner(shareId));
+    
+    return updatedList;
+  } catch (error) {
+    // Fallback: update localStorage and URL
+    console.warn('Backend not available, using fallback:', error);
+    
+    const existing = loadSharedListFromLocalStorage(shareId);
+    const updatedList: ShoppingList = {
+      id: shareId,
+      items,
+      createdAt: existing?.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    };
+    
+    // Save to localStorage
+    saveSharedListToLocalStorage(shareId, updatedList, isListOwner(shareId));
+    
+    // Update URL if we're on the shared list page
+    if (window.location.pathname.includes(`/s/${shareId}`)) {
+      try {
+        const listData = {
+          items: updatedList.items,
+          createdAt: updatedList.createdAt,
+          updatedAt: updatedList.updatedAt,
+        };
+        const jsonString = JSON.stringify(listData);
+        const base64Data = btoa(encodeURIComponent(jsonString));
+        
+        // Update URL without reload
+        const newUrl = `${window.location.pathname}?data=${base64Data}`;
+        window.history.replaceState({}, '', newUrl);
+      } catch (urlError) {
+        console.error('Failed to update URL:', urlError);
+      }
+    }
+    
+    return updatedList;
   }
-  
-  return updatedList;
 };
 
 // LocalStorage helpers for shared lists
