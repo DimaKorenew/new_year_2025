@@ -24,6 +24,13 @@ export interface Recipe {
   ingredients?: string[];
   steps?: RecipeStep[];
   url?: string;
+  servings?: number;
+  nutrition?: {
+    proteins: number; // in grams
+    fats: number; // in grams
+    carbs: number; // in grams
+    calories: number; // in kcal
+  };
 }
 
 export interface Article {

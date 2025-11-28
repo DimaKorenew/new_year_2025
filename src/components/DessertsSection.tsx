@@ -4,10 +4,9 @@ import { RecipeCard } from './RecipeCard';
 
 interface DessertsSectionProps {
   recipes: Recipe[];
-  onRecipeClick: (recipe: Recipe) => void;
 }
 
-export const DessertsSection: React.FC<DessertsSectionProps> = ({ recipes, onRecipeClick }) => {
+export const DessertsSection: React.FC<DessertsSectionProps> = ({ recipes }) => {
   const [isVisible, setIsVisible] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);

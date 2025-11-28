@@ -4,10 +4,9 @@ import { RecipeCard } from './RecipeCard';
 
 interface FeaturedRecipesProps {
   recipes: Recipe[];
-  onRecipeClick: (recipe: Recipe) => void;
 }
 
-export const FeaturedRecipes: React.FC<FeaturedRecipesProps> = ({ recipes, onRecipeClick }) => {
+export const FeaturedRecipes: React.FC<FeaturedRecipesProps> = ({ recipes }) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);
 

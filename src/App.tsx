@@ -128,7 +128,6 @@ function MainContent() {
       <Hero />
       <SaladsSection
         recipes={salads}
-        onRecipeClick={() => {}}
         onAddIngredient={addIngredient}
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}
@@ -335,7 +334,6 @@ function SharedListPage() {
       <Hero />
       <SaladsSection
         recipes={salads}
-        onRecipeClick={() => {}}
         onAddIngredient={addIngredient}
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}

@@ -4,7 +4,6 @@ import { RecipeCard } from './RecipeCard';
 
 interface DrinksSectionProps {
   recipes: Recipe[];
-  onRecipeClick: (recipe: Recipe) => void;
 }
 
 const categories: { value: DrinkCategory; label: string; emoji: string }[] = [
@@ -13,7 +12,7 @@ const categories: { value: DrinkCategory; label: string; emoji: string }[] = [
   { value: 'hot', label: 'ГОРЯЧИЕ', emoji: '☕' },
 ];
 
-export const DrinksSection: React.FC<DrinksSectionProps> = ({ recipes, onRecipeClick }) => {
+export const DrinksSection: React.FC<DrinksSectionProps> = ({ recipes }) => {
   const [expandedCategory, setExpandedCategory] = useState<DrinkCategory | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);

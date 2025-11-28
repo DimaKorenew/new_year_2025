@@ -4,7 +4,6 @@ import { RecipeCard } from './RecipeCard';
 
 interface SaladsSectionProps {
   recipes: Recipe[];
-  onRecipeClick: (recipe: Recipe) => void;
   onAddIngredient?: (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>, ingredient: string) => void;
   onAddAllIngredients?: (recipe: Pick<Recipe, 'id' | 'name' | 'ingredients'>) => void;
   onShowToast?: (message: string) => void;
@@ -20,7 +19,6 @@ const filters: { value: SaladFilter; label: string }[] = [
 
 export const SaladsSection: React.FC<SaladsSectionProps> = ({
   recipes,
-  onRecipeClick,
   onAddIngredient,
   onAddAllIngredients,
   onShowToast,
