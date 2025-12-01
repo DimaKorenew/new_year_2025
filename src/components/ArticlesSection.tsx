@@ -68,6 +68,17 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
             </a>
           ))}
         </div>
+
+        <div className="flex justify-center mt-12">
+          <a
+            href="https://www.edimdoma.ru/news/posts"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium text-lg inline-block"
+          >
+            Ещё
+          </a>
+        </div>
       </div>
     </section>
   );
