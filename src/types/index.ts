@@ -36,6 +36,7 @@ export interface Article {
   description: string;
   readTime: string;
   image: string;
+  url?: string;
 }
 
 export interface TimelineTask {

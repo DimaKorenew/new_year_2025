@@ -39,29 +39,33 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {articles.map((article) => (
-            <article
+            <a
               key={article.id}
-              className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer block"
             >
-              <div className="relative h-64 overflow-hidden">
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold mb-2">
-                  {article.emoji} {article.title}
-                </h3>
-                <p className="text-gray-600 mb-4">{article.description}</p>
-                <p className="text-primary font-semibold">
-                  Читать {article.readTime} →
-                </p>
-              </div>
-            </article>
+              <article>
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold mb-2">
+                    {article.emoji} {article.title}
+                  </h3>
+                  <p className="text-gray-600">
+                    {article.description}
+                  </p>
+                </div>
+              </article>
+            </a>
           ))}
         </div>
       </div>

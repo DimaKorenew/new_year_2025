@@ -40,6 +40,7 @@ export interface Article {
   description: string;
   image: string;
   readTime: string;
+  url?: string;
 }
 
 export interface TimelineTask {
