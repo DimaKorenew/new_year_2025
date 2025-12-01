@@ -8,20 +8,48 @@ interface Tag {
 }
 
 const tags: Tag[] = [
-  { id: '1', label: 'Горячее', emoji: '🍖', href: '/recipes?category=hot' },
-  { id: '2', label: 'Салаты', emoji: '🥗', href: '/recipes?category=salad' },
-  { id: '3', label: 'Десерты', emoji: '🍰', href: '/recipes?category=dessert' },
-  { id: '4', label: 'Напитки', emoji: '🍹', href: '/recipes?category=drink' },
-  { id: '5', label: 'Закуски', emoji: '🥪', href: '/recipes?category=snack' },
-  { id: '6', label: 'Выпечка', emoji: '🥐', href: '/recipes?category=baking' },
-  { id: '7', label: 'Супы', emoji: '🍲', href: '/recipes?category=soup' },
-  { id: '8', label: 'Быстро', emoji: '⚡', href: '/recipes?time=fast' },
-  { id: '9', label: 'Вегетарианское', emoji: '🥬', href: '/recipes?diet=vegetarian' },
-  { id: '10', label: 'Классика', emoji: '⭐', href: '/recipes?filter=classic' },
-  { id: '11', label: 'Новинки', emoji: '✨', href: '/recipes?filter=new' },
-  { id: '12', label: 'Праздничное', emoji: '🎉', href: '/recipes?filter=holiday' },
-  { id: '13', label: 'Для детей', emoji: '👶', href: '/recipes?audience=kids' },
-  { id: '14', label: 'Здоровое', emoji: '💚', href: '/recipes?diet=healthy' },
+  {
+    id: '1',
+    label: 'Горячее',
+    emoji: '🍖',
+    href: 'https://www.edimdoma.ru/retsepty/tags/41161-goryachie-blyuda-na-novyy-god-uzhin',
+  },
+  {
+    id: '2',
+    label: 'Салаты',
+    emoji: '🥗',
+    href: 'https://www.edimdoma.ru/retsepty/tags/5273-legkie-salaty',
+  },
+  {
+    id: '3',
+    label: 'Закуски',
+    emoji: '🥪',
+    href: 'https://www.edimdoma.ru/retsepty/tags/145-zakuski',
+  },
+  {
+    id: '4',
+    label: 'Десерты',
+    emoji: '🍰',
+    href: 'https://www.edimdoma.ru/retsepty/tags/189-deserty',
+  },
+  {
+    id: '5',
+    label: 'Выпечка',
+    emoji: '🥐',
+    href: 'https://www.edimdoma.ru/retsepty/tags/183-vypechka',
+  },
+  {
+    id: '6',
+    label: 'Гарниры',
+    emoji: '🥔',
+    href: 'https://www.edimdoma.ru/retsepty/tags/41250-v-duhovke-garniry',
+  },
+  {
+    id: '7',
+    label: 'Соусы-дипы',
+    emoji: '🥣',
+    href: 'https://www.edimdoma.ru/retsepty/tags/256-sousy-dipy',
+  },
 ];
 
 export const TagsSection: React.FC = () => {
@@ -46,18 +74,7 @@ export const TagsSection: React.FC = () => {
   }, []);
 
   const handleTagClick = (href: string) => {
-    // В реальном приложении здесь будет навигация
-    // Пока просто скроллим к соответствующей секции или показываем alert
-    if (href.includes('category=salad')) {
-      window.location.href = '#salads';
-    } else if (href.includes('category=dessert')) {
-      window.location.href = '#desserts';
-    } else if (href.includes('category=drink')) {
-      window.location.href = '#drinks';
-    } else {
-      // Для других тегов можно открыть модальное окно или перейти на страницу
-      console.log('Navigate to:', href);
-    }
+    window.open(href, '_blank', 'noopener,noreferrer');
   };
 
   return (

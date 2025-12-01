@@ -1,6 +1,6 @@
 export type RecipeCategory = 'hot' | 'salad' | 'dessert' | 'drink' | 'snack';
 
-export type SaladFilter = 'all' | 'classic' | 'modern' | 'light' | 'hearty';
+export type SaladFilter = 'all' | 'hot' | 'salad' | 'dessert' | 'snack' | 'sauce';
 
 export type DrinkCategory = 'alcoholic' | 'non-alcoholic' | 'hot';
 

@@ -11,10 +11,11 @@ interface SaladsSectionProps {
 
 const filters: { value: SaladFilter; label: string }[] = [
   { value: 'all', label: 'Все' },
-  { value: 'classic', label: 'Классические' },
-  { value: 'modern', label: 'Современные' },
-  { value: 'light', label: 'Лёгкие' },
-  { value: 'hearty', label: 'Сытные' },
+  { value: 'hot', label: 'Горячее' },
+  { value: 'salad', label: 'Салаты' },
+  { value: 'dessert', label: 'Десерты' },
+  { value: 'snack', label: 'Закуски' },
+  { value: 'sauce', label: 'Соусы и заправки' },
 ];
 
 export const SaladsSection: React.FC<SaladsSectionProps> = ({
@@ -25,6 +26,7 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<SaladFilter>('all');
   const [isVisible, setIsVisible] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(4);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -44,9 +46,65 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
     return () => observer.disconnect();
   }, []);
 
+  // Сброс счетчика при смене фильтра
+  useEffect(() => {
+    setVisibleCount(4);
+  }, [activeFilter]);
+
   const filteredRecipes = recipes.filter(
-    (recipe) => activeFilter === 'all' || recipe.saladFilter === activeFilter
+    (recipe) => {
+      if (activeFilter === 'all') return true;
+      if (activeFilter === 'sauce') {
+        // Фильтруем соусы и заправки по названию
+        const nameLower = recipe.name.toLowerCase();
+        return nameLower.includes('соус') || 
+               nameLower.includes('заправка') ||
+               nameLower.includes('дип') ||
+               nameLower.includes('майонез') ||
+               nameLower.includes('крем');
+      }
+      if (activeFilter === 'salad') {
+        // В категории "Салаты" только конкретные 4 рецепта
+        const allowedSalads = [
+          'Салат с курицей, ананасами и орехами',
+          'Хрустящий салат с авокадо, креветками и помидорами черри',
+          'Салат «Нежный»',
+          'Сельдь под шубой (рулет)'
+        ];
+        return recipe.category === 'salad' && allowedSalads.includes(recipe.name);
+      }
+      return recipe.category === activeFilter;
+    }
   );
+
+  // Для категории "Все" показываем только часть рецептов
+  const displayedRecipes = activeFilter === 'all' 
+    ? filteredRecipes.slice(0, visibleCount)
+    : filteredRecipes;
+
+  const hasMore = activeFilter === 'all' && visibleCount < filteredRecipes.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 4);
+  };
+
+  // Ссылки для кнопок "ещё" в разных категориях
+  const getMoreLink = (): string | null => {
+    switch (activeFilter) {
+      case 'hot':
+        return 'https://www.edimdoma.ru/retsepty/tags/41161-goryachie-blyuda-na-novyy-god-uzhin';
+      case 'salad':
+        return 'https://www.edimdoma.ru/retsepty/tags/5273-legkie-salaty';
+      case 'snack':
+        return 'https://www.edimdoma.ru/retsepty/tags/145-zakuski';
+      case 'sauce':
+        return 'https://www.edimdoma.ru/retsepty/tags/143-sousy-i-zapravki';
+      default:
+        return null;
+    }
+  };
+
+  const moreLink = getMoreLink();
 
   return (
     <section
@@ -78,7 +136,7 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRecipes.map((recipe) => (
+          {displayedRecipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
@@ -88,6 +146,31 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
             />
           ))}
         </div>
+        
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleLoadMore}
+              className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium text-lg"
+              type="button"
+            >
+              Ещё
+            </button>
+          </div>
+        )}
+
+        {moreLink && (
+          <div className="flex justify-center mt-8">
+            <a
+              href={moreLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium text-lg inline-block"
+            >
+              Ещё
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );
