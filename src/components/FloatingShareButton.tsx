@@ -7,7 +7,7 @@ interface FloatingShareButtonProps {
 export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({ onClick }) => {
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+    <div className="fixed bottom-6 left-4 md:left-1/2 md:transform md:-translate-x-1/2 z-50">
       <button
         onClick={onClick}
         className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 flex items-center gap-2"

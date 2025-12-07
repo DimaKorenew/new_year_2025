@@ -5,6 +5,58 @@ interface ArticlesSectionProps {
   articles: Article[];
 }
 
+interface Tag {
+  id: string;
+  label: string;
+  emoji: string;
+  href: string;
+}
+
+const articleTags: Tag[] = [
+  {
+    id: '1',
+    label: 'Новый 2026 год',
+    emoji: '🎄',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/145215-novyy-2026-god',
+  },
+  {
+    id: '2',
+    label: 'Новогодний стол',
+    emoji: '🍽️',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/4818-novogodniy-stol',
+  },
+  {
+    id: '3',
+    label: 'Рецепты от шеф-повара',
+    emoji: '👨‍🍳',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/144382-retsepty-ot-shef-povara',
+  },
+  {
+    id: '4',
+    label: 'Неделя на вкус',
+    emoji: '📅',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/145216-nedelya-na-vkus',
+  },
+  {
+    id: '5',
+    label: 'Рестораны',
+    emoji: '🏪',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/8000-restorany',
+  },
+  {
+    id: '6',
+    label: 'Лайфхаки',
+    emoji: '💡',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/6158-layfhaki',
+  },
+  {
+    id: '7',
+    label: 'Секреты приготовления',
+    emoji: '🔍',
+    href: 'https://www.edimdoma.ru/jivem_doma/posts/tags/847-sekrety-prigotovleniya',
+  },
+];
+
 export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [visibleCount, setVisibleCount] = useState(4);
@@ -29,6 +81,10 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
 
   const handleLoadMore = () => {
     setVisibleCount(prev => prev + 4);
+  };
+
+  const handleTagClick = (href: string) => {
+    window.open(href, '_blank', 'noopener,noreferrer');
   };
 
   const visibleArticles = articles.slice(0, visibleCount);
@@ -87,6 +143,22 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
             </button>
           </div>
         )}
+
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-12">
+          {articleTags.map((tag) => (
+            <button
+              key={tag.id}
+              onClick={() => handleTagClick(tag.href)}
+              className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-gray-100 hover:bg-primary hover:text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+              type="button"
+            >
+              <span className="text-xl md:text-2xl">{tag.emoji}</span>
+              <span className="font-medium text-sm md:text-base whitespace-nowrap">
+                {tag.label}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

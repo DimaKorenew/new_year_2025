@@ -11,7 +11,7 @@ export const ShoppingListFAB: React.FC<ShoppingListFABProps> = ({ itemsCount, on
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-6 z-50">
+    <div className="fixed bottom-6 right-4 md:left-auto md:transform-none md:right-6 z-50">
       <button
         onClick={onClick}
         className="bg-primary hover:bg-primary-dark text-white font-medium px-6 py-4 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-3 h-[60px] md:h-auto"
