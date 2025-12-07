@@ -7,6 +7,7 @@ interface ArticlesSectionProps {
 
 export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(4);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -26,6 +27,13 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
     return () => observer.disconnect();
   }, []);
 
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 4);
+  };
+
+  const visibleArticles = articles.slice(0, visibleCount);
+  const hasMore = visibleCount < articles.length;
+
   return (
     <section
       id="articles"
@@ -38,7 +46,7 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {articles.map((article) => (
+          {visibleArticles.map((article) => (
             <a
               key={article.id}
               href={article.url}
@@ -69,16 +77,16 @@ export const ArticlesSection: React.FC<ArticlesSectionProps> = ({ articles }) =>
           ))}
         </div>
 
-        <div className="flex justify-center mt-12">
-          <a
-            href="https://www.edimdoma.ru/news/posts"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium text-lg inline-block"
-          >
-            Ещё
-          </a>
-        </div>
+        {hasMore && (
+          <div className="flex justify-center mt-12">
+            <button
+              onClick={handleLoadMore}
+              className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium text-lg"
+            >
+              Ещё
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
