@@ -98,6 +98,8 @@ build:
 
 deploy_stage:
   stage: deploy_stage
+  variables:
+    CI_REGISTRY: "git.edimdoma.ru:5050"
   dependencies:
     - build
   script:
@@ -107,6 +109,8 @@ deploy_stage:
 
 deploy_prod:
   stage: deploy_prod
+  variables:
+    CI_REGISTRY: "git.edimdoma.ru:5050"
   dependencies:
     - build
   script:

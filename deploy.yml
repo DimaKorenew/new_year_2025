@@ -37,8 +37,8 @@
            
          - name: Pull and start containers
            environment:
+             CI_REGISTRY: "{{ lookup('env', 'CI_REGISTRY') }}"
              CI_COMMIT_TAG: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
-             docker_VERSION: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
              NODE_ENV: "production"
            shell: cd /docker/new_year_2025/; docker compose pull; docker compose up -d
            
