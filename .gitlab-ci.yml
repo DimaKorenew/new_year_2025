@@ -26,10 +26,10 @@ before_script:
   - |
     if [ ! -d ".git" ]; then
       echo "Cloning repository from ${GITLAB_HOST}..."
-      git clone git@${GITLAB_HOST}:edimdoma/${PROJECT_NAME}.git .
+      git clone git@${GITLAB_HOST}:infrastructure/${PROJECT_NAME}.git .
     else
       echo "Repository exists, updating..."
-      git remote set-url origin git@${GITLAB_HOST}:edimdoma/${PROJECT_NAME}.git
+      git remote set-url origin git@${GITLAB_HOST}:infrastructure/${PROJECT_NAME}.git
       git fetch origin --tags
       git fetch origin
     fi

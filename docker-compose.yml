@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ${CI_REGISTRY:-localhost}/edimdoma/new_year_2025/backend:${CI_COMMIT_TAG:-latest}
+    image: ${CI_REGISTRY:-localhost}/infrastructure/new_year_2025/backend:${CI_COMMIT_TAG:-latest}
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -22,7 +22,7 @@ services:
       start_period: 40s
 
   frontend:
-    image: ${CI_REGISTRY:-localhost}/edimdoma/new_year_2025/frontend:${CI_COMMIT_TAG:-latest}
+    image: ${CI_REGISTRY:-localhost}/infrastructure/new_year_2025/frontend:${CI_COMMIT_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
