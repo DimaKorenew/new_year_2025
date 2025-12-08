@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     image: ${CI_REGISTRY:-localhost}/infrastructure/new_year_2025/backend:${CI_COMMIT_TAG:-latest}
