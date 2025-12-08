@@ -6,7 +6,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter basename="/new-year-2025">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
