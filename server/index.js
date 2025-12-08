@@ -7,7 +7,9 @@ const PORT = 3001;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite dev server (порт 5173)
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['http://localhost:8088', 'http://localhost'] 
+    : 'http://localhost:5173', // Vite dev server (порт 5173)
   credentials: true
 }));
 app.use(express.json());
@@ -47,7 +49,9 @@ app.post('/api/lists/share', (req, res) => {
     sharedLists.set(shareId, listData);
 
     // Generate share URL
-    const shareUrl = `http://localhost:5173/s/${shareId}`;
+    const shareUrl = process.env.NODE_ENV === 'production'
+      ? `http://localhost:8088/s/${shareId}`
+      : `http://localhost:5173/s/${shareId}`;
 
     console.log(`✅ Created list with ID: ${shareId}`);
 

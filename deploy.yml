@@ -1,0 +1,49 @@
+---
+- name: new_year_2025
+  become: true
+  become_user: root
+  hosts: all
+  tasks:
+         - name: Make compose directories
+           file:
+            state: directory
+            mode: 0755
+            path: "/docker/new_year_2025/"
+
+         - name: Copy docker-compose from template
+           template:
+              src: "docker-compose.yml"
+              dest: "/docker/new_year_2025/docker-compose.yml"
+           register: copy
+           until: copy is not failed
+           retries: 10
+           
+         - name: Copy nginx config
+           template:
+              src: "nginx.conf"
+              dest: "/docker/new_year_2025/nginx.conf"
+           register: nginx_copy
+           until: nginx_copy is not failed
+           retries: 5
+
+         - name: Docker registry login
+           shell: |
+             echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+           environment:
+             CI_REGISTRY: "{{ lookup('env', 'CI_REGISTRY') }}"
+             CI_REGISTRY_USER: "{{ lookup('env', 'CI_REGISTRY_USER') }}"
+             CI_REGISTRY_PASSWORD: "{{ lookup('env', 'CI_REGISTRY_PASSWORD') }}"
+           no_log: true
+           
+         - name: Pull and start containers
+           environment:
+             CI_COMMIT_TAG: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
+             docker_VERSION: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
+             NODE_ENV: "production"
+           shell: cd /docker/new_year_2025/; docker compose pull; docker compose up -d
+           
+         - name: Clean up old images
+           shell: docker image prune -af --filter "until=72h"
+           ignore_errors: yes
+
+
