@@ -786,6 +786,33 @@ export const drinks: Recipe[] = [
 
 export const articles: Article[] = [
   {
+    id: 'news-top-1',
+    title: 'Домашняя слабосоленая горбуша и дешевле, и полезнее — нашли незаменимый перед Новым годом рецепт',
+    emoji: '🐟',
+    description: 'Слабосоленая рыба остается одним из самых востребованных продуктов в преддверии Нового года',
+    image: 'https://e3.edimdoma.ru/data/posts/0004/1721/41721-ed4_wide.jpg?1764857399',
+    readTime: '6 мин',
+    url: 'https://www.edimdoma.ru/news/posts/41721-domashnyaya-slabosolenaya-gorbusha-i-deshevle-i-poleznee-nashli-nezamenimyy-pered-novym-godom-retsept',
+  },
+  {
+    id: 'news-top-2',
+    title: 'Не трогай, это на Новый год:! Сколько отложить с декабрьской зарплаты на праздник, чтобы не разориться?',
+    emoji: '💰',
+    description: 'Составлять меню лучше заранее',
+    image: 'https://e3.edimdoma.ru/data/posts/0004/1715/41715-ed4_wide.jpg?1764850116',
+    readTime: '5 мин',
+    url: 'https://www.edimdoma.ru/news/posts/41715-ne-trogay-eto-na-novyy-god-skolko-otlozhit-s-dekabrskoy-zarplaty-na-prazdnik-chtoby-ne-razoritsya',
+  },
+  {
+    id: 'news-top-3',
+    title: 'Диетолог Мухина предложила не добавлять крабовые палочки в новогодний салат: что вместо них?',
+    emoji: '🥗',
+    description: 'Крабовый салат — одно из главных блюд новогоднего стола',
+    image: 'https://e3.edimdoma.ru/data/posts/0004/1744/41744-ed4_wide.jpg?1764937137',
+    readTime: '4 мин',
+    url: 'https://www.edimdoma.ru/news/posts/41744-dietolog-muhina-predlozhila-ne-dobavlyat-krabovye-palochki-v-novogodniy-salat-chto-vmesto-nih',
+  },
+  {
     id: 'news-1',
     title: 'Приятная мягкость: один новый ингредиент — и согревающий гоголь-моголь заиграет новыми красками',
     emoji: '🥛',
