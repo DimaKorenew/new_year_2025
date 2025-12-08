@@ -40,6 +40,8 @@
              CI_REGISTRY: "{{ lookup('env', 'CI_REGISTRY') }}"
              CI_COMMIT_TAG: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
              NODE_ENV: "production"
+             FRONTEND_PORT: "8089"
+             BACKEND_PORT: "3002"
            shell: cd /docker/new_year_2025/; docker compose pull; docker compose up -d
            
          - name: Clean up old images
