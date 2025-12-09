@@ -27,7 +27,7 @@ export const Hero: FC = () => {
           {/* Логотип Еду Дома */}
           <div className="relative">
             <img 
-              src="/edu-doma-logo.png" 
+              src="https://new-year-2025-lilac.vercel.app/edu-doma-logo.png" 
               alt="Еду Дома" 
               className="w-auto h-32 md:h-44 max-w-[90vw] md:max-w-full drop-shadow-2xl"
             />

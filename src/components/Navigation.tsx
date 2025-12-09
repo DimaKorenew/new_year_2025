@@ -39,7 +39,7 @@ export const Navigation: React.FC = () => {
           </div>
           <div className="flex-shrink-0 hidden md:block">
             <img 
-              src="/edu-doma-logo.png" 
+              src="https://new-year-2025-lilac.vercel.app/edu-doma-logo.png" 
               alt="Еду Дома" 
               className="h-12 w-auto"
             />
