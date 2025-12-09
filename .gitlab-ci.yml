@@ -1,0 +1,124 @@
+variables:
+  GIT_STRATEGY: none
+  GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 222"
+  GITLAB_HOST: "172.17.0.1"
+  PROJECT_NAME: "new_year_2025"
+
+stages:
+  - release
+  - build
+  - deploy_stage
+  - deploy_prod
+
+before_script:
+  # === Настройка SSH ===
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - eval $(ssh-agent -s)
+  
+  # Добавляем SSH ключ
+  - echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+  
+  # Экспортируем GIT_SSH_COMMAND
+  - export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 222"
+  
+  # === Клонируем репозиторий по IP ===
+  - |
+    if [ ! -d ".git" ]; then
+      echo "Cloning repository from ${GITLAB_HOST}..."
+      git clone git@${GITLAB_HOST}:infrastructure/${PROJECT_NAME}.git .
+    else
+      echo "Repository exists, updating..."
+      git remote set-url origin git@${GITLAB_HOST}:infrastructure/${PROJECT_NAME}.git
+      git fetch origin --tags
+      git fetch origin
+    fi
+  
+  # Переключаемся на нужную ветку/тег
+  - |
+    if [ -n "$CI_COMMIT_TAG" ]; then
+      echo "Checking out tag: $CI_COMMIT_TAG"
+      git checkout $CI_COMMIT_TAG
+    else
+      echo "Checking out branch: $CI_COMMIT_BRANCH"
+      git checkout $CI_COMMIT_BRANCH
+      git pull origin $CI_COMMIT_BRANCH || true
+    fi
+  
+  # Docker login
+  - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin git.edimdoma.ru:5050
+
+
+release:
+  stage: release
+  script: |
+    set -ex
+    MAJOR=$(date +%y.%-W)
+    
+    # Определяем суффикс в зависимости от ветки
+    if [ "$CI_COMMIT_BRANCH" = "staging" ]; then
+      SUFFIX="-stage"
+      PATTERN="${MAJOR}.*-stage"
+    else
+      SUFFIX=""
+      PATTERN="${MAJOR}.[0-9]*"
+    fi
+    
+    CURRENT_VERSION=$(git tag -l "${PATTERN}" | grep -v '\-stage' | sort -rV | head -1 2>/dev/null || echo "")
+    
+    if [ "$CI_COMMIT_BRANCH" = "staging" ]; then
+      CURRENT_VERSION=$(git tag -l "${MAJOR}.*-stage" | sort -rV | head -1 2>/dev/null || echo "")
+    fi
+    
+    if [ -z "${CURRENT_VERSION}" ]; then
+      MINOR=0
+    else
+      MINOR=$(echo $CURRENT_VERSION | sed 's/-stage$//' | awk -F. '{print $3 + 1}')
+    fi
+    
+    TAG="${MAJOR}.${MINOR}${SUFFIX}"
+    echo "Release ${TAG} from branch ${CI_COMMIT_BRANCH}"
+    git tag "${TAG}"
+    
+    # Пушим теги через SSH
+    git push origin --tags
+  only:
+    - main
+    - staging
+
+build:
+  stage: build
+  variables:
+    NODE_ENV: "production"
+  script:
+    - docker compose build
+    - docker compose push
+  only:
+    - tags
+
+deploy_stage:
+  stage: deploy_stage
+  variables:
+    CI_REGISTRY: "git.edimdoma.ru:5050"
+  dependencies:
+    - build
+  script:
+    - ansible-playbook --limit=stage -u root deploy.yml
+  only:
+    - /^.*-stage$/
+
+deploy_prod:
+  stage: deploy_prod
+  variables:
+    CI_REGISTRY: "git.edimdoma.ru:5050"
+  dependencies:
+    - build
+  script:
+    - ansible-playbook --limit=prod -u root deploy.yml
+  only:
+    - tags
+  except:
+    - /^.*-stage$/
+  when: manual
+
+

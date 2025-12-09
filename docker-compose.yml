@@ -1,0 +1,45 @@
+services:
+  backend:
+    image: ${CI_REGISTRY:-localhost}/infrastructure/new_year_2025/backend:${CI_COMMIT_TAG:-latest}
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: new_year_backend
+    ports:
+      - "${BACKEND_PORT:-3002}:3001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ${CI_REGISTRY:-localhost}/infrastructure/new_year_2025/frontend:${CI_COMMIT_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: new_year_frontend
+    ports:
+      - "${FRONTEND_PORT:-8090}:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge
+
