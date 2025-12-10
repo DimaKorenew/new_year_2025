@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 const navItems = [
-  { id: 'salads', label: '🥗 Рецепты', href: '#salads' },
-  { id: 'articles', label: '📰 Идеи и советы', href: '#articles' },
-  { id: 'video', label: '🎬 Видео', href: '#video' },
-  { id: 'timeline', label: '⏰ План', href: '#timeline' },
+  { id: 'salads', label: '🥗 Рецепты', href: '/new-year-2025/#salads' },
+  { id: 'articles', label: '📰 Идеи и советы', href: '/new-year-2025/#articles' },
+  { id: 'video', label: '🎬 Видео', href: '/new-year-2025/#video' },
+  { id: 'timeline', label: '⏰ План', href: '/new-year-2025/#timeline' },
 ];
 
 export const Navigation: React.FC = () => {

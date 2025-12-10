@@ -10,6 +10,7 @@
     "build:client": "tsc && vite build",
     "build:server": "tsc && vite build --config vite.config.ssr.ts",
     "build:prerender": "node scripts/prerender.js",
+    "start": "vite preview",
     "preview": "vite preview",
     "preview:ssr": "NODE_ENV=production node server/ssr.js"
   },

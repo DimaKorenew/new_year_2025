@@ -114,7 +114,7 @@ export const SaladsSection: React.FC<SaladsSectionProps> = ({
     >
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
-          🥗 Новогоднее меню: от классики до экспериментов
+          🥗 Меню и рецепты на Новый год 2026
         </h1>
         
         <div className="flex flex-wrap justify-center gap-2 mb-12">
