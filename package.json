@@ -4,13 +4,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev:client": "vite",
+    "dev:ssr": "NODE_ENV=development node server/ssr.js",
+    "build": "npm run build:client && npm run build:server && npm run build:prerender",
+    "build:client": "tsc && vite build",
+    "build:server": "tsc && vite build --config vite.config.ssr.ts",
+    "build:prerender": "node scripts/prerender.js",
+    "preview": "vite preview",
+    "preview:ssr": "NODE_ENV=production node server/ssr.js"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.9.6"
+    "react-router-dom": "^7.9.6",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

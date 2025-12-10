@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# ISR cache
+.isr-cache
+
 # Environment variables
 .env
 .env.local

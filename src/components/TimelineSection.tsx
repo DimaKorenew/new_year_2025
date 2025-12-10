@@ -7,12 +7,14 @@ interface TimelineSectionProps {
 
 export const TimelineSection: React.FC<TimelineSectionProps> = ({ stages }) => {
   const [localStages, setLocalStages] = useState<TimelineStage[]>(() => {
-    const saved = localStorage.getItem('timeline-tasks');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return stages;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('timeline-tasks');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return stages;
+        }
       }
     }
     return stages;
@@ -38,7 +40,9 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ stages }) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('timeline-tasks', JSON.stringify(localStages));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('timeline-tasks', JSON.stringify(localStages));
+    }
   }, [localStages]);
 
   const toggleTask = (stageId: string, taskId: string) => {

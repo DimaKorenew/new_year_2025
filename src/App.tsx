@@ -9,6 +9,7 @@ import { SaladsSection } from './components/SaladsSection';
 import { ArticlesSection } from './components/ArticlesSection';
 import { TimelineSection } from './components/TimelineSection';
 import { VideoRecipesSection, saladsData, appetizersData } from './components/VideoRecipesSection';
+import { NewYearMenuSection } from './components/NewYearMenuSection';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ShoppingListFAB } from './components/ShoppingListFAB';
@@ -147,6 +148,7 @@ function MainContent() {
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}
       />
+      <NewYearMenuSection />
       <Footer />
       
       <FloatingShareButton onClick={handleShareClick} />
@@ -353,6 +355,7 @@ function SharedListPage() {
         onAddAllIngredients={addAllIngredients}
         onShowToast={handleShowToast}
       />
+      <NewYearMenuSection />
       <Footer />
 
       <ShoppingListFAB itemsCount={itemsCount} onClick={() => setShowShoppingListModal(true)} />
